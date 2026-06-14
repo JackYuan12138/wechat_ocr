@@ -14,6 +14,8 @@ from .xplugin_manager import XPluginManager
 
 
 OCR_MAX_TASK_ID = 32
+OCR_DEFAULT_EXE_PATH = "..\\bin\\WeChatOCR\\WeChatOCR.exe"
+OCR_DEFAULT_USER_LIB_DIR = "..\\bin"
 
 class RequestIdOCR(Enum):
     OCRPush = 1
