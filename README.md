@@ -80,5 +80,5 @@ if __name__ == "__main__":
 ![result](./result.png)
 
 ## 感谢
-https://github.com/kanadeblisst00/wechat_ocr
+https://github.com/kanadeblisst00/wechat_ocr 
 https://github.com/EEEEhex/QQImpl
