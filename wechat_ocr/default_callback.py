@@ -1,3 +1,4 @@
+import sys
 from .winapi import *
 
 
@@ -21,25 +22,25 @@ callbacks_def = {
 }
 
 def DefaultReadPush(request_id:c_uint32, request_info:c_void_p, user_data: py_object):
-    print(f"DefaultReadOnPush 回调函数被调用, request_id: {request_id}, request_info: {request_info}")
+    print(f"DefaultReadOnPush 回调函数被调用, request_id: {request_id}, request_info: {request_info}", file=sys.stderr)
 
 def DefaultReadPull(request_id:c_uint32, request_info:c_void_p, user_data: py_object):
-    print(f"DefaultReadOnPull 回调函数被调用, request_id: {request_id}, request_info: {request_info} ")
+    print(f"DefaultReadOnPull 回调函数被调用, request_id: {request_id}, request_info: {request_info} ", file=sys.stderr)
 
 def DefaultReadShared(request_id:c_uint32, request_info:c_void_p, user_data: py_object):
-    print(f"DefaultReadOnShared 回调函数被调用, request_id: {request_id}, request_info: {request_info} ")
+    print(f"DefaultReadOnShared 回调函数被调用, request_id: {request_id}, request_info: {request_info} ", file=sys.stderr)
 
 def DefaultRemoteConnect(is_connected:c_bool, user_data:py_object):
-    print(f"DefaultRemoteOnConnect 回调函数被调用, is_connected: {is_connected}")
+    print(f"DefaultRemoteOnConnect 回调函数被调用, is_connected: {is_connected}", file=sys.stderr)
 
 def DefaultRemoteDisConnect(user_data:py_object):
-    print(f"DefaultRemoteDisConnect 回调函数被调用 ")
+    print(f"DefaultRemoteDisConnect 回调函数被调用 ", file=sys.stderr)
 
 def DefaultRemoteProcessLaunched(user_data:py_object):
-    print(f"DefaultRemoteProcessLaunched 回调函数被调用 ")
+    print(f"DefaultRemoteProcessLaunched 回调函数被调用 ", file=sys.stderr)
 
 def DefaultRemoteProcessLaunchFailed(error_code:c_int, user_data:py_object):
-    print(f"DefaultRemoteProcessLaunchFailed 回调函数被调用, error_code: {error_code}")
+    print(f"DefaultRemoteProcessLaunchFailed 回调函数被调用, error_code: {error_code}", file=sys.stderr)
 
 def DefaultRemoteMojoError(errorbuf:c_void_p, errorsize:c_int, user_data:py_object):
-    print(f"DefaultRemoteOnMojoError 回调函数被调用, errorbuf: {errorbuf}, errorsize: {errorsize}")
+    print(f"DefaultRemoteOnMojoError 回调函数被调用, errorbuf: {errorbuf}, errorsize: {errorsize}", file=sys.stderr)

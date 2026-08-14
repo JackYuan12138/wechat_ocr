@@ -76,13 +76,13 @@ class RequestIdPlayer(Enum):
 
 
 class XPluginManager(object):
-    m_cb_usrdata:py_object
-    m_exe_path:c_wchar_p
-    m_switch_native: Dict[str, str] = {}
-    m_cmdline: List[str] = []
-    m_mmmojo_env_ptr: c_void_p = c_void_p(None)
-    m_init_mmmojo_env = False
-    m_callbacks: Dict[str, Callable] = {}
+    m_cb_usrdata: py_object
+    m_exe_path: c_wchar_p
+    m_switch_native: Dict[str, str]
+    m_cmdline: List[str]
+    m_mmmojo_env_ptr: c_void_p
+    m_init_mmmojo_env: bool
+    m_callbacks: Dict[str, Callable]
 
     def __init__(self, wechat_path) -> None:
         python_bit = platform.architecture()[0]
@@ -94,6 +94,13 @@ class XPluginManager(object):
         if not os.path.exists(mmmojo_dllpath):
             raise Exception("给定的微信路径不存在mmmojo.dll")
         self._dll = MmmojoDll(mmmojo_dllpath)
+        # 以下可变状态必须为实例级，否则多个实例会共享并互相污染
+        self.m_switch_native = {}
+        self.m_cmdline = []
+        self.m_mmmojo_env_ptr = c_void_p(None)
+        self.m_init_mmmojo_env = False
+        self.m_callbacks = {}
+        self.m_exe_path = None
         self.m_cb_usrdata = self
         # 增加callback的引用计数，防止被垃圾回收机制处理
         self._callbacks_refer = {}

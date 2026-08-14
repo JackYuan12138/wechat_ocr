@@ -75,6 +75,38 @@ if __name__ == "__main__":
     main()
 ```
 
+#### 高层接口（推荐，便于 AI / 脚本调用）
+
+对上面这套「设路径 / 设回调 / 启动 / 逐个识别 / 忙等 / 关闭」的流程做了一层封装，
+一行调用即可拿到结构化结果，无需关心 task_id 和回调：
+
+```python
+from wechat_ocr import ocr, WeChatOcr
+
+# 一次性调用：自动启动服务、识别、关闭
+result = ocr("path/to/image.png")
+print(result.text)          # 完整识别文本（按行拼接）
+for item in result.items:   # 逐行：文本 + 坐标 + 置信度
+    print(item.text, item.left, item.top, item.confidence)
+
+# 批量 / 复用同一服务
+with WeChatOcr() as client:
+    r1 = client.recognize("a.png")
+    r2 = client.recognize("b.png")
+    for r in client.recognize_many(["c.png", "d.png"]):
+        print(r.text)
+```
+
+结果均为 `OcrItem` / `OcrResult` 数据类，可用 `.to_dict()` 转成 JSON 友好的字典。
+`wechat_dir` / `exe_path` 默认从包所在仓库的 `bin/` 目录解析，任意工作目录下均可运行。
+
+**命令行调用**（供 AI 通过 subprocess 直接解析 JSON）：
+
+```bash
+python -m wechat_ocr path/to/image.png other.png
+# 输出: { "path/to/image.png": { "taskId": 1, "text": "...", "items": [...] }, ... }
+```
+
 #### 运行结果
 
 ![result](./result.png)

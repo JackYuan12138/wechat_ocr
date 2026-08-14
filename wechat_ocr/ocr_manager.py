@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import time
 import base64
@@ -21,40 +22,47 @@ class RequestIdOCR(Enum):
     OCRPush = 1
 
 def OCRRemoteOnConnect(is_connected:c_bool, user_data:py_object):
-    print(f"OCRRemoteOnConnect 回调函数被调用, 参数, is_connected: {is_connected}")
+    print(f"OCRRemoteOnConnect 回调函数被调用, 参数, is_connected: {is_connected}", file=sys.stderr)
     if user_data:
         manager_obj:OcrManager = cast(user_data, py_object).value
         manager_obj.SetConnectState(True)
 
 def OCRRemoteOnDisConnect(user_data:py_object):
-    print(f"OCRRemoteOnDisConnect 回调函数被调用 ")
+    print(f"OCRRemoteOnDisConnect 回调函数被调用 ", file=sys.stderr)
     if user_data:
         manager_obj:OcrManager = cast(user_data, py_object).value
         manager_obj.SetConnectState(False)
 
 def OCRReadOnPush(request_id:c_uint32, request_info:c_void_p, user_data:py_object):
-    print(f"OCRReadOnPush 回调函数被调用 参数, request_id: {request_id}, request_info: {request_info}")
+    print(f"OCRReadOnPush 回调函数被调用 参数, request_id: {request_id}, request_info: {request_info}", file=sys.stderr)
     if user_data:
         manager_obj:OcrManager = cast(user_data, py_object).value
         pb_size = c_uint32()
         pb_data = manager_obj.GetPbSerializedData(request_info, pb_size)
         if pb_size.value > 10:
-            print(f"正在解析pb数据，pb数据大小: {pb_size.value}")
+            print(f"正在解析pb数据，pb数据大小: {pb_size.value}", file=sys.stderr)
             manager_obj.CallUsrCallback(request_id, pb_data, pb_size.value)
             manager_obj.RemoveReadInfo(request_info)
 
 
 class OcrManager(XPluginManager):
-    m_task_id = Queue(OCR_MAX_TASK_ID)
-    m_id_path:Dict[int, str] = {}
-    m_usr_lib_dir: str = None
-    m_wechatocr_running: bool = False
-    m_connect_state:Value = Value('b', False)
-    m_usr_callback: Callable = None
+    m_task_id: Queue
+    m_id_path: Dict[int, str]
+    m_usr_lib_dir: str
+    m_wechatocr_running: bool
+    m_connect_state: Value
+    m_usr_callback: Callable
 
     def __init__(self, wechat_path) -> None:
         super().__init__(wechat_path)
-        for i in range(1, 33):
+        # 可变状态必须为实例级，避免多个 OcrManager 实例共享队列导致阻塞/串扰
+        self.m_task_id = Queue(OCR_MAX_TASK_ID)
+        self.m_id_path = {}
+        self.m_usr_lib_dir = None
+        self.m_wechatocr_running = False
+        self.m_connect_state = Value('b', False)
+        self.m_usr_callback = None
+        for i in range(1, OCR_MAX_TASK_ID + 1):
             self.m_task_id.put(i)
     
     def __del__(self):
@@ -85,11 +93,11 @@ class OcrManager(XPluginManager):
             raise Exception(f"给定图片路径pic_path不存在: {pic_path}")
         pic_path = os.path.abspath(pic_path)
         while not self.m_connect_state.value:
-            print("等待Ocr服务连接成功!")
+            print("等待Ocr服务连接成功!", file=sys.stderr)
             time.sleep(1)
         _id = self.GetIdleTaskId()
         if not _id:
-            print("当前队列已满，请等待后重试")
+            print("当前队列已满，请等待后重试", file=sys.stderr)
             return
         self.SendOCRTask(_id, pic_path)
     
@@ -145,6 +153,7 @@ class OcrManager(XPluginManager):
                     "right": i.get('right'),
                     "bottom": i.get('bottom')
                 },
+                "rate": i.get('singleRate'),
                 "pos": pos
             }
             results["ocrResult"].append(r)
